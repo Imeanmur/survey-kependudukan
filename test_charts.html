@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Charts</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <h1>Testing Charts</h1>
+    
+    <h2>Dashboard Charts</h2>
+    <h3>Kecamatan Chart</h3>
+    <canvas id="chartKecamatan" width="400" height="100"></canvas>
+    
+    <h3>Agama Chart</h3>
+    <canvas id="chartAgama" width="400" height="100"></canvas>
+    
+    <h2>Grafik Tab Charts</h2>
+    <h3>Trend Input</h3>
+    <canvas id="chartTrendInput" width="400" height="100"></canvas>
+    
+    <h3>Umur Gender</h3>
+    <canvas id="chartUmurGender" width="400" height="100"></canvas>
+    
+    <script>
+        const API_BASE = './api/';
+        
+        // Test 1: Kecamatan Chart
+        fetch(`${API_BASE}data.php?action=get_data_by_kecamatan`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Kecamatan data:', data);
+                if (data.success && data.data.length > 0) {
+                    const labels = data.data.map(item => item.kecamatan);
+                    const chartData = data.data.map(item => item.total_kartu);
+                    
+                    const ctx = document.getElementById('chartKecamatan');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Total Kartu',
+                                data: chartData,
+                                backgroundColor: '#667eea'
+                            }]
+                        }
+                    });
+                    console.log('✅ Kecamatan chart rendered');
+                } else {
+                    console.warn('⚠️ Kecamatan data empty or failed');
+                }
+            })
+            .catch(error => console.error('❌ Kecamatan error:', error));
+        
+        // Test 2: Agama Chart
+        fetch(`${API_BASE}data.php?action=get_grafik_agama`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Agama data:', data);
+                if (data.success && data.labels.length > 0) {
+                    const ctx = document.getElementById('chartAgama');
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                data: data.data,
+                                backgroundColor: ['#667eea', '#43e97b', '#f5576c', '#ffa502', '#764ba2']
+                            }]
+                        }
+                    });
+                    console.log('✅ Agama chart rendered');
+                } else {
+                    console.warn('⚠️ Agama data empty or failed');
+                }
+            })
+            .catch(error => console.error('❌ Agama error:', error));
+        
+        // Test 3: Trend Input Chart
+        fetch(`${API_BASE}data.php?action=get_grafik_trend_input`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Trend data:', data);
+                if (data.success && data.labels.length > 0) {
+                    const ctx = document.getElementById('chartTrendInput');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [
+                                {
+                                    label: 'Total Input',
+                                    data: data.datasets.input,
+                                    borderColor: '#667eea',
+                                    tension: 0.4
+                                },
+                                {
+                                    label: 'Terverifikasi',
+                                    data: data.datasets.verifikasi,
+                                    borderColor: '#43e97b',
+                                    tension: 0.4
+                                }
+                            ]
+                        }
+                    });
+                    console.log('✅ Trend chart rendered');
+                } else {
+                    console.warn('⚠️ Trend data empty or failed');
+                }
+            })
+            .catch(error => console.error('❌ Trend error:', error));
+        
+        // Test 4: Umur Gender Chart
+        fetch(`${API_BASE}data.php?action=get_grafik_umur_gender`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Umur Gender data:', data);
+                if (data.success && data.labels.length > 0) {
+                    const ctx = document.getElementById('chartUmurGender');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [
+                                {
+                                    label: 'Laki-laki',
+                                    data: data.datasets.laki,
+                                    borderColor: '#4facfe',
+                                    tension: 0.4
+                                },
+                                {
+                                    label: 'Perempuan',
+                                    data: data.datasets.perempuan,
+                                    borderColor: '#fa709a',
+                                    tension: 0.4
+                                }
+                            ]
+                        }
+                    });
+                    console.log('✅ Umur Gender chart rendered');
+                } else {
+                    console.warn('⚠️ Umur Gender data empty or failed');
+                }
+            })
+            .catch(error => console.error('❌ Umur Gender error:', error));
+        
+        console.log('Test started - check results above');
+    </script>
+</body>
+</html>
