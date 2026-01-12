@@ -1,3 +1,12 @@
+<?php
+session_start();
+if (!isset($_SESSION['admin'])) {
+    header('Location: /survey-kependudukan/login.html');
+    exit;
+}
+$admin = $_SESSION['admin'];
+?>
+<?php /* The dashboard content mirrors the previous index.html */ ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -45,9 +54,14 @@
                         <i class="fas fa-user-circle"></i>
                     </div>
                     <div class="user-details">
-                        <p class="user-name">Admin</p>
-                        <p class="user-role">Diskominfo</p>
+                        <p class="user-name"><?php echo htmlspecialchars($admin['name']); ?></p>
+                        <p class="user-role"><?php echo htmlspecialchars($admin['role']); ?></p>
                     </div>
+                </div>
+                <div style="margin-top:12px;">
+                    <a href="/survey-kependudukan/auth/logout.php" class="btn" style="background:#fff;color:#333;border:1px solid #e9ecef;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;text-decoration:none">
+                        <i class="fas fa-sign-out-alt"></i> Keluar
+                    </a>
                 </div>
             </div>
         </aside>
@@ -520,15 +534,10 @@
     </div>
 
     <!-- Scripts -->
-    <!-- Try multiple CDN sources for Chart.js -->
     <script>
-        // Fallback for Chart.js if CDN fails
         window.chartLoadedFromCDN = false;
     </script>
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" defer onload="window.chartLoadedFromCDN = true;" onerror="console.log('CDN 1 failed, trying alternative...')"></script>
-    
-    <!-- Fallback CDN if primary fails -->
     <script>
         if (!window.chartLoadedFromCDN) {
             var fallbackScript = document.createElement('script');
@@ -538,39 +547,6 @@
             document.body.appendChild(fallbackScript);
         }
     </script>
-    
     <script src="assets/js/script.js"></script>
-    
-    <script>
-        // Quick test script
-        console.log('='.repeat(60));
-        console.log('QUICK NAVIGATION TEST');
-        console.log('='.repeat(60));
-        
-        // This runs immediately to check if DOM elements are ready
-        window.testNav = function(menu) {
-            console.log('\n🔴 MANUAL TEST:', menu);
-            const navItem = document.querySelector(`[data-menu="${menu}"]`);
-            if (navItem) {
-                console.log('✅ Nav item found:', menu);
-                navItem.click();
-                console.log('✅ Click simulated');
-            } else {
-                console.error('❌ Nav item NOT found:', menu);
-            }
-        };
-        
-        // Auto-run test when page fully loads
-        window.addEventListener('load', function() {
-            console.log('\n✅ PAGE FULLY LOADED');
-            console.log('📊 Nav items:', document.querySelectorAll('.nav-item').length);
-            console.log('📊 Menu contents:', document.querySelectorAll('.menu-content').length);
-            console.log('\nYou can manually test navigation by typing in console:');
-            console.log('  testNav("penduduk")');
-            console.log('  testNav("grafik")');
-            console.log('  testNav("laporan")');
-            console.log('='.repeat(60));
-        });
-    </script>
 </body>
 </html>

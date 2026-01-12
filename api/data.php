@@ -34,6 +34,9 @@ switch($action) {
     case 'search_keluarga':
         searchKeluarga();
         break;
+    case 'get_keluarga_detail':
+        getKeluargaDetail();
+        break;
     default:
         echo json_encode(['success' => false, 'message' => 'Invalid action']);
 }
@@ -155,7 +158,7 @@ function getGrafikPekerjaan() {
               WHERE pekerjaan IS NOT NULL AND pekerjaan != ''
               GROUP BY pekerjaan 
               ORDER BY jumlah DESC 
-              LIMIT 10";
+              LIMIT 7";
     
     $result = $conn->query($query);
     $data = array();
@@ -355,5 +358,41 @@ function getGrafikPendidikan() {
         'labels' => $labels,
         'data' => $values
     ]);
+}
+
+function getKeluargaDetail() {
+    global $conn;
+
+    $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    if ($id <= 0) {
+        echo json_encode(['success' => false, 'message' => 'ID tidak valid']);
+        return;
+    }
+
+    // Detail keluarga
+    $stmt = $conn->prepare("SELECT * FROM keluarga WHERE id_keluarga = ? LIMIT 1");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $keluarga = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$keluarga) {
+        echo json_encode(['success' => false, 'message' => 'Data tidak ditemukan']);
+        return;
+    }
+
+    // Anggota keluarga
+    $stmt = $conn->prepare("SELECT id_penduduk, nik, nama_lengkap, jenis_kelamin, hubungan_keluarga, pekerjaan, pendidikan_terakhir
+                             FROM penduduk WHERE id_keluarga = ? ORDER BY hubungan_keluarga, nama_lengkap");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $anggota = [];
+    while ($row = $result->fetch_assoc()) {
+        $anggota[] = $row;
+    }
+    $stmt->close();
+
+    echo json_encode(['success' => true, 'keluarga' => $keluarga, 'anggota' => $anggota]);
 }
 ?>

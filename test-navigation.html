@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Test</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .nav { background: #667eea; padding: 10px; margin-bottom: 20px; }
+        .nav-item { background: #764ba2; color: white; padding: 10px 20px; margin: 5px; cursor: pointer; display: inline-block; }
+        .nav-item.active { background: #43e97b; }
+        .menu { display: none; padding: 20px; background: #f0f0f0; margin: 10px 0; }
+        .menu.active { display: block; }
+        .console { background: #000; color: #0f0; padding: 10px; height: 200px; overflow: auto; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>Navigation Test</h1>
+    
+    <div class="nav">
+        <div class="nav-item" data-menu="dashboard">Dashboard</div>
+        <div class="nav-item" data-menu="penduduk">Penduduk</div>
+        <div class="nav-item" data-menu="grafik">Grafik</div>
+        <div class="nav-item" data-menu="laporan">Laporan</div>
+    </div>
+    
+    <div id="dashboardMenu" class="menu active">
+        <h2>Dashboard Content</h2>
+        <p>This is dashboard</p>
+    </div>
+    <div id="pendudukMenu" class="menu">
+        <h2>Penduduk Content</h2>
+        <p>This is penduduk data</p>
+    </div>
+    <div id="grafikMenu" class="menu">
+        <h2>Grafik Content</h2>
+        <p>This is grafik charts</p>
+    </div>
+    <div id="laporanMenu" class="menu">
+        <h2>Laporan Content</h2>
+        <p>This is laporan form</p>
+    </div>
+    
+    <h3>Console Output:</h3>
+    <div id="console" class="console"></div>
+    
+    <script>
+        // Simple test setup
+        const consoleEl = document.getElementById('console');
+        const originalLog = console.log;
+        
+        // Redirect console to div
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
+            consoleEl.innerHTML += msg + '\n';
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        };
+        
+        console.log('='.repeat(50));
+        console.log('NAVIGATION TEST STARTING');
+        console.log('='.repeat(50));
+        
+        // Setup click handlers
+        document.querySelectorAll('.nav-item').forEach((item, idx) => {
+            console.log(`Setting up listener ${idx} for ${item.dataset.menu}`);
+            
+            item.onclick = function(e) {
+                e.preventDefault();
+                const menuType = this.dataset.menu;
+                console.log(`🔴 CLICKED: ${menuType}`);
+                
+                // Hide all
+                document.querySelectorAll('.menu').forEach(m => m.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                
+                // Show current
+                this.classList.add('active');
+                document.getElementById(menuType + 'Menu').classList.add('active');
+                
+                console.log(`✅ Menu changed to ${menuType}`);
+            };
+        });
+        
+        console.log('✅ Setup complete');
+        console.log('Try clicking the nav items above');
+    </script>
+</body>
+</html>

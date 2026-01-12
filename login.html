@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Admin - Survey Kependudukan</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="assets/css/login.css" />
+</head>
+<body>
+  <div class="login-bg">
+    <div class="login-card">
+      <div class="login-left">
+        <div class="brand-icon"><i class="fas fa-wind"></i></div>
+        <h1 id="greetingTitle">Selamat Datang!</h1>
+        <p id="greetingSubtitle">Selesaikan tugasmu dan nikmati sisa harimu.</p>
+      </div>
+      <div class="login-right">
+        <h2>Login Akun</h2>
+        <p class="muted">Gunakan akun terdaftar Anda.</p>
+
+        <form action="auth/login.php" method="post" class="login-form">
+          <label class="input-wrap">
+            <span class="icon"><i class="fas fa-envelope"></i></span>
+            <input type="email" name="username" placeholder="Email atau NIM" required />
+          </label>
+
+          <label class="input-wrap">
+            <span class="icon"><i class="fas fa-lock"></i></span>
+            <input type="password" name="password" id="passwordInput" placeholder="Password" required />
+            <button type="button" class="toggle" id="togglePassword" aria-label="Tampilkan/Sembunyikan Password">
+              <i class="fas fa-eye-slash"></i>
+            </button>
+          </label>
+
+          <div class="error" id="errorMsg">&nbsp;</div>
+
+          <button class="btn-primary" type="submit">Login</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/login.js"></script>
+  <script>
+    // Display error from redirect parameter if present
+    const params = new URLSearchParams(location.search);
+    const err = params.get('error');
+    if (err) {
+      const box = document.getElementById('errorMsg');
+      box.textContent = err;
+      box.classList.add('show');
+    }
+  </script>
+</body>
+</html>

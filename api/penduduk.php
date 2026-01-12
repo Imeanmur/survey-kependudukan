@@ -10,6 +10,9 @@ switch($action) {
     case 'get_penduduk_by_keluarga':
         getPendudukByKeluarga();
         break;
+    case 'search_penduduk':
+        searchPenduduk();
+        break;
     default:
         echo json_encode(['success' => false, 'message' => 'Invalid action']);
 }
@@ -59,6 +62,46 @@ function getPendudukByKeluarga() {
         $data[] = $row;
     }
     
+    echo json_encode(['success' => true, 'data' => $data]);
+}
+
+function searchPenduduk() {
+    global $conn;
+
+    $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+    $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 100;
+
+    if ($search === '') {
+        echo json_encode(['success' => true, 'data' => []]);
+        return;
+    }
+
+    // Gunakan prepared statement untuk keamanan
+    $like = "%" . $search . "%";
+    $sql = "SELECT p.*, k.no_kartu_keluarga, k.kepala_keluarga
+            FROM penduduk p
+            JOIN keluarga k ON p.id_keluarga = k.id_keluarga
+            WHERE p.nama_lengkap LIKE ? OR p.nik LIKE ?
+            ORDER BY p.tanggal_input DESC
+            LIMIT ?";
+
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'message' => 'Query prepare failed']);
+        return;
+    }
+
+    // Bind params: ss i (two strings for LIKE, one integer for limit)
+    $stmt->bind_param('ssi', $like, $like, $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $data = [];
+    while ($row = $result->fetch_assoc()) {
+        $data[] = $row;
+    }
+    $stmt->close();
+
     echo json_encode(['success' => true, 'data' => $data]);
 }
 ?>

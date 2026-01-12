@@ -25,34 +25,28 @@ function waitForChart(maxWait = 20000) {  // Increased timeout from 10s to 20s
     });
 }
 
-// Document Ready
-document.addEventListener('DOMContentLoaded', async function() {
+// Document Ready - SIMPLIFIED
+document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ DOM Content Loaded');
+    console.log('📊 Starting initialization...');
     
-    // Wait for Chart.js before initializing
-    const chartReady = await waitForChart();
-    if (chartReady) {
-        console.log('✅ Chart.js ready, initializing app...');
-        initializeApp();
-    } else {
-        console.warn('⚠️  Chart.js not loaded, but continuing without charts...');
-        // Continue anyway - show dashboard without charts
-        initializeApp();
-    }
+    // Initialize app immediately - don't wait for Chart.js
+    initializeApp();
 });
 
 function initializeApp() {
     console.log('✅ Initializing app...');
     
-    // Load initial data
-    loadDashboard();
-    
-    // Event Listeners
+    // Event Listeners FIRST (before anything else)
     setupEventListeners();
     
+    // Load initial dashboard
+    console.log('✅ Loading initial dashboard...');
+    loadDashboard();
+    
     // Hash routing
-    handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
+    console.log('✅ Hash change listener attached');
     
     // Refresh data every 5 minutes
     setInterval(loadDashboard, 300000);
@@ -61,14 +55,85 @@ function initializeApp() {
 function setupEventListeners() {
     console.log('✅ Setting up event listeners...');
     
-    // Menu Navigation - Click event
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', (e) => {
+    // Menu Navigation - Click event using addEventListener
+    const navItems = document.querySelectorAll('.nav-item');
+    console.log('📊 Total nav items found:', navItems.length);
+    
+    navItems.forEach((item, index) => {
+        console.log(`✅ Attaching listener to nav item ${index}:`, item.dataset.menu);
+        
+        // Remove any existing onclick handlers first
+        item.onclick = null;
+        
+        // Add listener using addEventListener for more reliable binding
+        item.addEventListener('click', function(e) {
             e.preventDefault();
-            const menu = item.dataset.menu;
-            console.log('Menu clicked:', menu);
-            window.location.hash = '#' + menu;
-        });
+            e.stopPropagation();
+            
+            const menuType = this.dataset.menu;
+            console.log('🔴 CLICKED NAV ITEM:', menuType);
+            
+            // Hide all menus
+            const allMenus = document.querySelectorAll('.menu-content');
+            console.log('🔴 Found menus to hide:', allMenus.length);
+            allMenus.forEach(el => {
+                el.classList.remove('active');
+                console.log('  ✅ Removed active from:', el.id);
+            });
+            
+            // Remove active from all nav items
+            const allNavItems = document.querySelectorAll('.nav-item');
+            allNavItems.forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Add active to current item
+            this.classList.add('active');
+            console.log('🔴 Added active to nav item:', menuType);
+            
+            // Show target menu
+            const targetMenuId = menuType + 'Menu';
+            const targetMenu = document.getElementById(targetMenuId);
+            
+            console.log('🔴 Looking for menu ID:', targetMenuId);
+            console.log('🔴 Menu element found:', targetMenu !== null);
+            
+            if (targetMenu) {
+                targetMenu.classList.add('active');
+                console.log('✅ Menu activated:', targetMenuId);
+                // Scroll content to top for better UX
+                const content = document.querySelector('.content-area');
+                if (content) {
+                    content.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            } else {
+                console.error('❌ Menu NOT found:', targetMenuId);
+                console.error('   Available IDs:', Array.from(document.querySelectorAll('[id*="Menu"]')).map(e => e.id));
+            }
+            
+            // Update title
+            const spanEl = this.querySelector('span');
+            const titleText = spanEl ? spanEl.textContent : menuType;
+            const titleEl = document.getElementById('pageTitle');
+            if (titleEl) {
+                titleEl.textContent = titleText;
+                console.log('🔴 Updated title to:', titleText);
+            }
+            
+            // Load data
+            console.log('🔴 Loading data for:', menuType);
+            if (menuType === 'dashboard') {
+                loadDashboard();
+            } else if (menuType === 'penduduk') {
+                loadPenduduk();
+            } else if (menuType === 'grafik') {
+                loadGrafik();
+            } else if (menuType === 'laporan') {
+                loadLaporanData();
+            }
+            
+            return false;
+        }, false); // Use non-capturing phase
     });
 
     // Sidebar Toggle
@@ -83,9 +148,10 @@ function setupEventListeners() {
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
         refreshBtn.addEventListener('click', () => {
-            refreshBtn.classList.add('fa-spin');
+            const icon = refreshBtn.querySelector('i');
+            if (icon) icon.classList.add('fa-spin');
             loadDashboard();
-            setTimeout(() => refreshBtn.classList.remove('fa-spin'), 1000);
+            setTimeout(() => { if (icon) icon.classList.remove('fa-spin'); }, 1000);
         });
     }
 
@@ -102,101 +168,104 @@ function setupEventListeners() {
         });
     }
 
+    // Search Penduduk (Nama atau NIK)
+    const searchPendudukInput = document.getElementById('searchPenduduk');
+    if (searchPendudukInput) {
+        let pendudukSearchTimeout;
+        searchPendudukInput.addEventListener('keyup', (e) => {
+            clearTimeout(pendudukSearchTimeout);
+            const query = e.target.value.trim();
+            if (query.length === 0) {
+                // kembali ke data awal jika input dikosongkan
+                loadPenduduk();
+                return;
+            }
+            if (query.length >= 2) {
+                pendudukSearchTimeout = setTimeout(() => searchPenduduk(query), 400);
+            }
+        });
+    }
+
     // Laporan Form
     const formLaporan = document.getElementById('formLaporan');
     if (formLaporan) {
         formLaporan.addEventListener('submit', handleLaporanSubmit);
     }
+
+    // Tombol kembali dari detail
+    const btnBackDetail = document.getElementById('btnBackDetail');
+    if (btnBackDetail) {
+        btnBackDetail.addEventListener('click', () => {
+            // kembali ke dashboard
+            const allMenus = document.querySelectorAll('.menu-content');
+            allMenus.forEach(el => el.classList.remove('active'));
+            const dash = document.getElementById('dashboardMenu');
+            if (dash) dash.classList.add('active');
+            const titleEl = document.getElementById('pageTitle');
+            if (titleEl) titleEl.textContent = 'Dashboard';
+        });
+    }
 }
 
-// Hash routing handler
+// Hash routing handler - SIMPLE VERSION
 function handleHashChange() {
     const hash = window.location.hash.slice(1) || 'dashboard';
-    console.log('Hash changed to:', hash);
+    console.log('✅ Hash changed to:', hash);
     
-    // Find matching nav item
+    // Find and click the nav item
     const navItem = document.querySelector(`[data-menu="${hash}"]`);
     if (navItem) {
-        handleMenuClick(navItem);
-    }
-}
-
-function handleMenuClick(item) {
-    console.log('Handling menu click:', item.dataset.menu);
-    
-    // Remove active class from all items
-    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-    item.classList.add('active');
-
-    // Hide all menu contents
-    document.querySelectorAll('.menu-content').forEach(menu => menu.classList.remove('active'));
-
-    // Show selected menu
-    const menuId = item.dataset.menu + 'Menu';
-    const menuElement = document.getElementById(menuId);
-    console.log('Menu element ID:', menuId, 'Found:', !!menuElement);
-    
-    if (menuElement) {
-        menuElement.classList.add('active');
-        document.getElementById('pageTitle').textContent = item.querySelector('span').textContent;
-
-        // Load data based on menu
-        const menuType = item.dataset.menu;
-        if (menuType === 'dashboard') {
-            loadDashboard();
-        } else if (menuType === 'penduduk') {
-            loadPenduduk();
-        } else if (menuType === 'grafik') {
-            loadGrafik();
-        } else if (menuType === 'laporan') {
-            loadLaporanData();
-        }
-    } else {
-        console.error('Menu element not found:', menuId);
-    }
-
-    // Close sidebar on mobile
-    if (window.innerWidth <= 768) {
-        document.querySelector('.sidebar').classList.remove('active');
+        navItem.click();
     }
 }
 
 function loadDashboard() {
+    console.log('✅ Loading Dashboard...');
+    
     // Load Stats
     fetch(`${API_BASE}data.php?action=get_stats`)
-        .then(response => response.json())
+        .then(response => {
+            console.log('Stats API response:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('Stats data received:', data);
             if (data.success) {
                 updateStats(data.data);
             }
         })
-        .catch(error => console.error('Error loading stats:', error));
+        .catch(error => console.error('❌ Error loading stats:', error));
 
     // Load Data Terbaru
     fetch(`${API_BASE}data.php?action=get_data_terbaru&limit=20`)
-        .then(response => response.json())
+        .then(response => {
+            console.log('Data Terbaru API response:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('Data Terbaru received:', data);
             if (data.success) {
                 updateDataTerbaru(data.data);
             }
         })
-        .catch(error => console.error('Error loading data terbaru:', error));
+        .catch(error => console.error('❌ Error loading data terbaru:', error));
 
     // Load Charts
+    console.log('✅ Loading Charts...');
     loadChartsData();
 }
 
 function updateStats(stats) {
-    document.getElementById('totalKartu').textContent = formatNumber(stats.total_kartu);
-    document.getElementById('totalPenduduk').textContent = formatNumber(stats.total_penduduk);
-    document.getElementById('verifikasiPending').textContent = formatNumber(stats.verifikasi_pending);
-    document.getElementById('verifikasiDitolak').textContent = formatNumber(stats.verifikasi_ditolak);
-    document.getElementById('verifikasiTerverifikasi').textContent = formatNumber(stats.verifikasi_terverifikasi);
+    animateCounter(document.getElementById('totalKartu'), stats.total_kartu);
+    animateCounter(document.getElementById('totalPenduduk'), stats.total_penduduk);
+    animateCounter(document.getElementById('verifikasiPending'), stats.verifikasi_pending);
+    animateCounter(document.getElementById('verifikasiDitolak'), stats.verifikasi_ditolak);
+    animateCounter(document.getElementById('verifikasiTerverifikasi'), stats.verifikasi_terverifikasi);
 
     // Calculate percentage
     const total = stats.total_kartu || 1;
     const persentase = Math.round((stats.verifikasi_terverifikasi / total) * 100);
-    document.getElementById('persentaseVerifikasi').textContent = persentase + '%';
+    animateCounter(document.getElementById('persentaseVerifikasi'), persentase, '%');
 
     // Update info
     document.getElementById('infoTotalRecord').textContent = formatNumber(stats.total_kartu + stats.total_penduduk);
@@ -370,6 +439,18 @@ function showChartLoading() {
 
 function loadPenduduk() {
     fetch(`${API_BASE}penduduk.php?action=get_penduduk&limit=100`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updatePendudukTable(data.data);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// Cari Penduduk berdasarkan nama lengkap atau NIK
+function searchPenduduk(query) {
+    fetch(`${API_BASE}penduduk.php?action=search_penduduk&search=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -570,18 +651,20 @@ function createChartAgamaFull(labels, data) {
             },
             plugins: {
                 legend: {
-                    position: 'right',
+                    position: 'bottom',
                     labels: {
-                        padding: 15,
+                        padding: 8,
                         font: {
-                            size: 12
+                            size: 10
                         }
                     }
                 },
                 tooltip: {
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    cornerRadius: 8,
+                    padding: 8,
+                    cornerRadius: 6,
+                    titleFont: { size: 11 },
+                    bodyFont: { size: 10 },
                     callbacks: {
                         label: function(context) {
                             const label = context.label || '';
@@ -613,7 +696,7 @@ function createChartPekerjaan(labels, data) {
                 label: 'Jumlah Penduduk',
                 data: data,
                 backgroundColor: backgroundColors,
-                borderRadius: 8,
+                borderRadius: 6,
                 borderWidth: 0
             }]
         },
@@ -631,10 +714,10 @@ function createChartPekerjaan(labels, data) {
                 },
                 tooltip: {
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    cornerRadius: 8,
-                    titleFont: { size: 14, weight: 'bold' },
-                    bodyFont: { size: 13 },
+                    padding: 8,
+                    cornerRadius: 6,
+                    titleFont: { size: 11, weight: 'bold' },
+                    bodyFont: { size: 10 },
                     callbacks: {
                         label: function(context) {
                             return 'Jumlah: ' + context.parsed.x.toLocaleString('id-ID');
@@ -650,6 +733,7 @@ function createChartPekerjaan(labels, data) {
                         drawBorder: false
                     },
                     ticks: {
+                        font: { size: 9 },
                         callback: function(value) {
                             return value.toLocaleString('id-ID');
                         }
@@ -658,6 +742,9 @@ function createChartPekerjaan(labels, data) {
                 y: {
                     grid: {
                         display: false
+                    },
+                    ticks: {
+                        font: { size: 9 }
                     }
                 }
             }
@@ -675,6 +762,10 @@ function createChartKecamatanDetail(data) {
 
     if (chartKecamatanDetail) chartKecamatanDetail.destroy();
 
+    // Prepare nice gradient backgrounds
+    const grad1 = makeAreaGradient(ctx, '#667eea');
+    const grad2 = makeAreaGradient(ctx, '#f093fb');
+
     chartKecamatanDetail = new Chart(ctx, {
         type: 'line',
         data: {
@@ -684,12 +775,12 @@ function createChartKecamatanDetail(data) {
                     label: 'Total Kartu Keluarga',
                     data: totalKartu,
                     borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.15)',
+                    backgroundColor: grad1,
                     tension: 0.4,
                     fill: true,
-                    borderWidth: 3,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
                     pointBackgroundColor: '#667eea',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2
@@ -698,12 +789,12 @@ function createChartKecamatanDetail(data) {
                     label: 'Total Penduduk',
                     data: totalPenduduk,
                     borderColor: '#f093fb',
-                    backgroundColor: 'rgba(240, 147, 251, 0.15)',
+                    backgroundColor: grad2,
                     tension: 0.4,
                     fill: true,
-                    borderWidth: 3,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
                     pointBackgroundColor: '#f093fb',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2
@@ -726,19 +817,19 @@ function createChartKecamatanDetail(data) {
                     position: 'top',
                     labels: {
                         usePointStyle: true,
-                        padding: 20,
+                        padding: 10,
                         font: {
-                            size: 13,
+                            size: 10,
                             weight: '600'
                         }
                     }
                 },
                 tooltip: {
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    cornerRadius: 8,
-                    titleFont: { size: 14, weight: 'bold' },
-                    bodyFont: { size: 13 },
+                    padding: 8,
+                    cornerRadius: 6,
+                    titleFont: { size: 11, weight: 'bold' },
+                    bodyFont: { size: 10 },
                     displayColors: true,
                     callbacks: {
                         label: function(context) {
@@ -758,6 +849,7 @@ function createChartKecamatanDetail(data) {
                         drawBorder: false
                     },
                     ticks: {
+                        font: { size: 9 },
                         callback: function(value) {
                             return value.toLocaleString('id-ID');
                         }
@@ -766,6 +858,9 @@ function createChartKecamatanDetail(data) {
                 x: {
                     grid: {
                         color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        font: { size: 9 }
                     }
                 }
             }
@@ -780,6 +875,9 @@ function createChartTrendInput(labels, datasets) {
 
     if (chartTrendInput) chartTrendInput.destroy();
 
+    const gradInput = makeAreaGradient(ctx, '#667eea');
+    const gradVerif = makeAreaGradient(ctx, '#43e97b');
+
     chartTrendInput = new Chart(ctx, {
         type: 'line',
         data: {
@@ -789,12 +887,12 @@ function createChartTrendInput(labels, datasets) {
                     label: 'Total Input Data',
                     data: datasets.input,
                     borderColor: '#667eea',
-                    backgroundColor: 'rgba(102, 126, 234, 0.15)',
+                    backgroundColor: gradInput,
                     tension: 0.4,
                     fill: true,
-                    borderWidth: 3,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
                     pointBackgroundColor: '#667eea',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
@@ -806,12 +904,12 @@ function createChartTrendInput(labels, datasets) {
                     label: 'Terverifikasi',
                     data: datasets.verifikasi,
                     borderColor: '#43e97b',
-                    backgroundColor: 'rgba(67, 233, 123, 0.15)',
+                    backgroundColor: gradVerif,
                     tension: 0.4,
                     fill: true,
-                    borderWidth: 3,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
                     pointBackgroundColor: '#43e97b',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2
@@ -834,19 +932,19 @@ function createChartTrendInput(labels, datasets) {
                     position: 'top',
                     labels: {
                         usePointStyle: true,
-                        padding: 20,
+                        padding: 10,
                         font: {
-                            size: 13,
+                            size: 10,
                             weight: '600'
                         }
                     }
                 },
                 tooltip: {
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    cornerRadius: 8,
-                    titleFont: { size: 14, weight: 'bold' },
-                    bodyFont: { size: 13 },
+                    padding: 8,
+                    cornerRadius: 6,
+                    titleFont: { size: 11, weight: 'bold' },
+                    bodyFont: { size: 10 },
                     displayColors: true,
                     callbacks: {
                         label: function(context) {
@@ -866,6 +964,7 @@ function createChartTrendInput(labels, datasets) {
                         drawBorder: false
                     },
                     ticks: {
+                        font: { size: 9 },
                         callback: function(value) {
                             return value.toLocaleString('id-ID');
                         }
@@ -873,7 +972,10 @@ function createChartTrendInput(labels, datasets) {
                 },
                 x: {
                     grid: {
-                        display: false
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        font: { size: 9 }
                     }
                 }
             }
@@ -888,6 +990,9 @@ function createChartUmurGender(labels, datasets) {
 
     if (chartUmurGender) chartUmurGender.destroy();
 
+    const gradL = makeAreaGradient(ctx, '#4facfe');
+    const gradP = makeAreaGradient(ctx, '#fa709a');
+
     chartUmurGender = new Chart(ctx, {
         type: 'line',
         data: {
@@ -897,12 +1002,12 @@ function createChartUmurGender(labels, datasets) {
                     label: 'Laki-laki',
                     data: datasets.laki,
                     borderColor: '#4facfe',
-                    backgroundColor: 'rgba(79, 172, 254, 0.15)',
+                    backgroundColor: gradL,
                     tension: 0.4,
                     fill: true,
-                    borderWidth: 3,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
                     pointBackgroundColor: '#4facfe',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2
@@ -911,12 +1016,12 @@ function createChartUmurGender(labels, datasets) {
                     label: 'Perempuan',
                     data: datasets.perempuan,
                     borderColor: '#fa709a',
-                    backgroundColor: 'rgba(250, 112, 154, 0.15)',
+                    backgroundColor: gradP,
                     tension: 0.4,
                     fill: true,
-                    borderWidth: 3,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
                     pointBackgroundColor: '#fa709a',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2
@@ -939,19 +1044,19 @@ function createChartUmurGender(labels, datasets) {
                     position: 'top',
                     labels: {
                         usePointStyle: true,
-                        padding: 20,
+                        padding: 10,
                         font: {
-                            size: 13,
+                            size: 10,
                             weight: '600'
                         }
                     }
                 },
                 tooltip: {
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    cornerRadius: 8,
-                    titleFont: { size: 14, weight: 'bold' },
-                    bodyFont: { size: 13 },
+                    padding: 8,
+                    cornerRadius: 6,
+                    titleFont: { size: 11, weight: 'bold' },
+                    bodyFont: { size: 10 },
                     displayColors: true,
                     callbacks: {
                         label: function(context) {
@@ -971,6 +1076,7 @@ function createChartUmurGender(labels, datasets) {
                         drawBorder: false
                     },
                     ticks: {
+                        font: { size: 9 },
                         callback: function(value) {
                             return value.toLocaleString('id-ID');
                         }
@@ -979,6 +1085,9 @@ function createChartUmurGender(labels, datasets) {
                 x: {
                     grid: {
                         display: false
+                    },
+                    ticks: {
+                        font: { size: 9 }
                     }
                 }
             }
@@ -1003,7 +1112,7 @@ function createChartVerifikasi(labels, data) {
                 label: 'Jumlah Keluarga',
                 data: data,
                 backgroundColor: backgroundColors.slice(0, labels.length),
-                borderRadius: 8,
+                borderRadius: 6,
                 borderSkipped: false,
                 borderWidth: 0
             }]
@@ -1021,10 +1130,10 @@ function createChartVerifikasi(labels, data) {
                 },
                 tooltip: {
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    cornerRadius: 8,
-                    titleFont: { size: 14, weight: 'bold' },
-                    bodyFont: { size: 13 },
+                    padding: 8,
+                    cornerRadius: 6,
+                    titleFont: { size: 11, weight: 'bold' },
+                    bodyFont: { size: 10 },
                     callbacks: {
                         label: function(context) {
                             return 'Jumlah: ' + context.parsed.y.toLocaleString('id-ID');
@@ -1040,6 +1149,7 @@ function createChartVerifikasi(labels, data) {
                         drawBorder: false
                     },
                     ticks: {
+                        font: { size: 9 },
                         callback: function(value) {
                             return value.toLocaleString('id-ID');
                         }
@@ -1048,6 +1158,9 @@ function createChartVerifikasi(labels, data) {
                 x: {
                     grid: {
                         display: false
+                    },
+                    ticks: {
+                        font: { size: 9 }
                     }
                 }
             }
@@ -1072,7 +1185,7 @@ function createChartPendidikan(labels, data) {
                 label: 'Jumlah Penduduk',
                 data: data,
                 backgroundColor: backgroundColors,
-                borderRadius: 8,
+                borderRadius: 6,
                 borderWidth: 0
             }]
         },
@@ -1090,10 +1203,10 @@ function createChartPendidikan(labels, data) {
                 },
                 tooltip: {
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    cornerRadius: 8,
-                    titleFont: { size: 14, weight: 'bold' },
-                    bodyFont: { size: 13 },
+                    padding: 8,
+                    cornerRadius: 6,
+                    titleFont: { size: 11, weight: 'bold' },
+                    bodyFont: { size: 10 },
                     callbacks: {
                         label: function(context) {
                             return 'Jumlah: ' + context.parsed.x.toLocaleString('id-ID');
@@ -1109,6 +1222,7 @@ function createChartPendidikan(labels, data) {
                         drawBorder: false
                     },
                     ticks: {
+                        font: { size: 9 },
                         callback: function(value) {
                             return value.toLocaleString('id-ID');
                         }
@@ -1117,6 +1231,9 @@ function createChartPendidikan(labels, data) {
                 y: {
                     grid: {
                         display: false
+                    },
+                    ticks: {
+                        font: { size: 9 }
                     }
                 }
             }
@@ -1143,8 +1260,99 @@ function generateColors(count) {
     return result;
 }
 
+// Animated counter for stat cards
+function animateCounter(el, target, suffix = '') {
+    if (!el) return;
+    const clean = (txt) => parseInt(String(txt).replace(/[^0-9]/g, '') || '0', 10);
+    const start = clean(el.textContent);
+    const end = typeof target === 'number' ? target : clean(target);
+    const duration = 900;
+    const startTime = performance.now();
+
+    function step(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+        const value = Math.round(start + (end - start) * eased);
+        el.textContent = suffix ? value.toLocaleString('id-ID') + suffix : value.toLocaleString('id-ID');
+        if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
+// Create a vertical fading area gradient for line charts
+function makeAreaGradient(canvasEl, hexColor) {
+    const ctx2d = canvasEl.getContext ? canvasEl.getContext('2d') : canvasEl;
+    const gradient = ctx2d.createLinearGradient(0, 0, 0, canvasEl.height || 300);
+    gradient.addColorStop(0, hexToRgba(hexColor, 0.22));
+    gradient.addColorStop(1, hexToRgba(hexColor, 0));
+    return gradient;
+}
+
+function hexToRgba(hex, alpha) {
+    const h = hex.replace('#','');
+    const bigint = parseInt(h.length === 3 ? h.split('').map(c=>c+c).join('') : h, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function viewDetail(idKeluarga) {
-    alert('Fitur detail keluarga akan segera tersedia');
+    if (!idKeluarga) return;
+
+    // Tampilkan indikator loading pada tabel anggota
+    const anggotaBody = document.getElementById('tabelAnggotaBody');
+    if (anggotaBody) {
+        anggotaBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Memuat...</td></tr>';
+    }
+
+    fetch(`${API_BASE}data.php?action=get_keluarga_detail&id=${encodeURIComponent(idKeluarga)}`)
+        .then(r => r.json())
+        .then(res => {
+            if (!res.success) {
+                alert(res.message || 'Gagal memuat detail');
+                return;
+            }
+
+            const k = res.keluarga;
+            document.getElementById('detailKK').textContent = k.no_kartu_keluarga || '-';
+            document.getElementById('detailKepala').textContent = k.kepala_keluarga || '-';
+            document.getElementById('detailAlamat').textContent = k.alamat || '-';
+            document.getElementById('detailKelurahan').textContent = k.kelurahan || '-';
+            document.getElementById('detailKecamatan').textContent = k.kecamatan || '-';
+            document.getElementById('detailStatus').textContent = (k.status_verifikasi || '-').toUpperCase();
+
+            // Render anggota
+            const body = document.getElementById('tabelAnggotaBody');
+            body.innerHTML = '';
+            if (!res.anggota || res.anggota.length === 0) {
+                body.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Tidak ada anggota</td></tr>';
+            } else {
+                res.anggota.forEach(a => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${a.nik || '-'}</td>
+                        <td>${a.nama_lengkap || '-'}</td>
+                        <td>${a.hubungan_keluarga || '-'}</td>
+                        <td>${a.jenis_kelamin || '-'}</td>
+                        <td>${a.pekerjaan || '-'}</td>
+                    `;
+                    body.appendChild(tr);
+                });
+            }
+
+            // Beralih ke halaman detail
+            const allMenus = document.querySelectorAll('.menu-content');
+            allMenus.forEach(el => el.classList.remove('active'));
+            document.getElementById('keluargaDetailMenu').classList.add('active');
+
+            const titleEl = document.getElementById('pageTitle');
+            if (titleEl) titleEl.textContent = 'Detail Kartu Keluarga';
+        })
+        .catch(err => {
+            console.error('Error memuat detail:', err);
+            alert('Terjadi kesalahan saat memuat detail');
+        });
 }
 
 function viewPendudukDetail(idPenduduk) {
