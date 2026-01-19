@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verifikasi OTP - Survey Kependudukan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="assets/css/login.css" />
+</head>
+
+<body>
+    <div class="login-bg">
+        <div class="login-card">
+            <div class="login-left">
+                <div class="brand-icon"><i class="fas fa-shield-alt"></i></div>
+                <h1>Verifikasi OTP</h1>
+                <p>Kode keamanan telah dikirim ke email Anda.</p>
+            </div>
+            <div class="login-right">
+                <h2>Masukkan Kode OTP</h2>
+                <p class="muted">Cek inbox atau folder spam email Anda.</p>
+
+                <form action="auth/verify_otp.php" method="post" class="login-form">
+                    <label class="input-wrap">
+                        <span class="icon"><i class="fas fa-key"></i></span>
+                        <input type="text" name="otp" placeholder="Kode 6 digit" maxlength="6" pattern="[0-9]{6}"
+                            required autocomplete="off" />
+                    </label>
+
+                    <div class="error" id="errorMsg">&nbsp;</div>
+
+                    <button class="btn-primary" type="submit">Verifikasi</button>
+
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <p style="font-size: 0.9rem; color: #666;">Tidak menerima kode? <a href="auth/resend_otp.php"
+                                style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Kirim
+                                Ulang</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/login.js"></script>
+    <script>
+        const params = new URLSearchParams(location.search);
+        const err = params.get('error');
+        const msg = params.get('msg');
+
+        const box = document.getElementById('errorMsg');
+
+        if (err) {
+            box.textContent = err;
+            box.classList.add('show');
+        } else if (msg) {
+            box.textContent = msg;
+            box.style.color = 'green';
+            box.style.backgroundColor = '#e8f5e9';
+            box.style.borderColor = '#c8e6c9';
+            box.classList.add('show');
+        }
+    </script>
+</body>
+
+</html>

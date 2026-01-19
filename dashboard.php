@@ -1,14 +1,12 @@
 <?php
-session_start();
-if (!isset($_SESSION['admin'])) {
-    header('Location: /survey-kependudukan/login.html');
-    exit;
-}
+require 'auth/check_session.php';
+
 $admin = $_SESSION['admin'];
 ?>
 <?php /* The dashboard content mirrors the previous index.html */ ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +15,7 @@ $admin = $_SESSION['admin'];
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
     <div class="container-wrapper">
         <!-- Sidebar -->
@@ -49,17 +48,22 @@ $admin = $_SESSION['admin'];
             </nav>
 
             <div class="sidebar-footer">
-                <div class="user-info">
-                    <div class="user-avatar">
-                        <i class="fas fa-user-circle"></i>
+                <a href="profile.php" style="text-decoration: none; color: inherit; display: block;"
+                    title="Lihat Profil">
+                    <div class="user-info"
+                        style="cursor: pointer; transition: background 0.2s; border-radius: 8px; padding: 4px;">
+                        <div class="user-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="user-details">
+                            <p class="user-name"><?php echo htmlspecialchars($admin['name']); ?></p>
+                            <p class="user-role"><?php echo htmlspecialchars($admin['role']); ?></p>
+                        </div>
                     </div>
-                    <div class="user-details">
-                        <p class="user-name"><?php echo htmlspecialchars($admin['name']); ?></p>
-                        <p class="user-role"><?php echo htmlspecialchars($admin['role']); ?></p>
-                    </div>
-                </div>
+                </a>
                 <div style="margin-top:12px;">
-                    <a href="/survey-kependudukan/auth/logout.php" class="btn" style="background:#fff;color:#333;border:1px solid #e9ecef;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;text-decoration:none">
+                    <a href="/survey-kependudukan/auth/logout.php" class="btn"
+                        style="background:#fff;color:#333;border:1px solid #e9ecef;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;text-decoration:none">
                         <i class="fas fa-sign-out-alt"></i> Keluar
                     </a>
                 </div>
@@ -93,7 +97,7 @@ $admin = $_SESSION['admin'];
 
             <!-- Content Area -->
             <div class="content-area">
-                
+
                 <!-- Dashboard Menu -->
                 <div id="dashboardMenu" class="menu-content active">
                     <!-- Stats Cards -->
@@ -271,7 +275,8 @@ $admin = $_SESSION['admin'];
                         <div class="card-header">
                             <h3><i class="fas fa-users"></i> Data Penduduk</h3>
                             <div class="card-tools">
-                                <input type="text" id="searchPenduduk" placeholder="Cari penduduk..." class="search-input">
+                                <input type="text" id="searchPenduduk" placeholder="Cari penduduk..."
+                                    class="search-input">
                             </div>
                         </div>
                         <div class="card-body">
@@ -308,7 +313,8 @@ $admin = $_SESSION['admin'];
                         <div class="card-header">
                             <h3><i class="fas fa-id-card"></i> Detail Kartu Keluarga</h3>
                             <div class="card-tools">
-                                <button class="btn" id="btnBackDetail"><i class="fas fa-arrow-left"></i> Kembali</button>
+                                <button class="btn" id="btnBackDetail"><i class="fas fa-arrow-left"></i>
+                                    Kembali</button>
                             </div>
                         </div>
                         <div class="card-body">
@@ -339,7 +345,8 @@ $admin = $_SESSION['admin'];
                                         <i class="fas fa-city"></i>
                                         <div>
                                             <p class="label">Kelurahan / Kecamatan</p>
-                                            <p class="value"><span id="detailKelurahan">-</span> / <span id="detailKecamatan">-</span></p>
+                                            <p class="value"><span id="detailKelurahan">-</span> / <span
+                                                    id="detailKecamatan">-</span></p>
                                         </div>
                                     </div>
                                     <div class="info-item">
@@ -363,7 +370,10 @@ $admin = $_SESSION['admin'];
                                                 </tr>
                                             </thead>
                                             <tbody id="tabelAnggotaBody">
-                                                <tr><td colspan="5" class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Memuat...</td></tr>
+                                                <tr>
+                                                    <td colspan="5" class="text-center text-muted"><i
+                                                            class="fas fa-spinner fa-spin"></i> Memuat...</td>
+                                                </tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -537,16 +547,19 @@ $admin = $_SESSION['admin'];
     <script>
         window.chartLoadedFromCDN = false;
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" defer onload="window.chartLoadedFromCDN = true;" onerror="console.log('CDN 1 failed, trying alternative...')"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" defer
+        onload="window.chartLoadedFromCDN = true;"
+        onerror="console.log('CDN 1 failed, trying alternative...')"></script>
     <script>
         if (!window.chartLoadedFromCDN) {
             var fallbackScript = document.createElement('script');
             fallbackScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js';
             fallbackScript.defer = true;
-            fallbackScript.onload = function() { window.chartLoadedFromCDN = true; };
+            fallbackScript.onload = function () { window.chartLoadedFromCDN = true; };
             document.body.appendChild(fallbackScript);
         }
     </script>
     <script src="assets/js/script.js"></script>
 </body>
+
 </html>
