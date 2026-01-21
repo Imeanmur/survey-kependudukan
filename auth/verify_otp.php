@@ -37,6 +37,24 @@ if ($inputOtp === $pending['otp']) {
     // Set last activity for timeout
     $_SESSION['last_activity'] = time();
 
+    // Register Active Session in DB
+    require_once __DIR__ . '/../includes/config.php'; // Ensure config is loaded
+
+    // Clean up old session for this user first (or update)
+    $sessionId = session_id();
+    $userAgent = $_SERVER['HTTP_USER_AGENT'];
+    $ipVal = $_SERVER['REMOTE_ADDR'];
+    $now = date('Y-m-d H:i:s');
+
+    // Insert or Update (ON DUPLICATE KEY UPDATE)
+    $stmtSess = $conn->prepare("INSERT INTO active_sessions (user_email, session_id, ip_address, user_agent, last_activity) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE session_id = VALUES(session_id), ip_address = VALUES(ip_address), user_agent = VALUES(user_agent), last_activity = VALUES(last_activity)");
+
+    if ($stmtSess) {
+        $stmtSess->bind_param("sssss", $email, $sessionId, $ipVal, $userAgent, $now);
+        $stmtSess->execute();
+        $stmtSess->close();
+    }
+
     // Audit Log
     require_once __DIR__ . '/../includes/config.php';
 

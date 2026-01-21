@@ -44,6 +44,28 @@ if (!password_verify($password, $info['password_hash'])) {
     exit;
 }
 
+
+// Check for active session in other devices
+require_once __DIR__ . '/../includes/config.php';
+$checkStmt = $conn->prepare("SELECT last_activity FROM active_sessions WHERE user_email = ?");
+$checkStmt->bind_param("s", $email);
+$checkStmt->execute();
+$checkResult = $checkStmt->get_result();
+
+if ($checkResult->num_rows > 0) {
+    $row = $checkResult->fetch_assoc();
+    $lastActivity = strtotime($row['last_activity']);
+    // If active within last 30 minutes, block
+    if (time() - $lastActivity < 300) {
+        header('Location: /survey-kependudukan/login.html?error=Akun sedang digunakan di perangkat lain');
+        exit;
+    } else {
+        // Old stale session, maybe clean it up or valid to override
+        // For now, let's allow it but we'll overwrite it in verify_otp
+    }
+}
+$checkStmt->close();
+
 // Success: set session
 // SUCCESS: Generate OTP and temporary session
 $otp = sprintf('%06d', mt_rand(0, 999999));

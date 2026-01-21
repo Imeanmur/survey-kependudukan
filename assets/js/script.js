@@ -26,53 +26,53 @@ function waitForChart(maxWait = 20000) {  // Increased timeout from 10s to 20s
 }
 
 // Document Ready - SIMPLIFIED
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('✅ DOM Content Loaded');
     console.log('📊 Starting initialization...');
-    
+
     // Initialize app immediately - don't wait for Chart.js
     initializeApp();
 });
 
 function initializeApp() {
     console.log('✅ Initializing app...');
-    
+
     // Event Listeners FIRST (before anything else)
     setupEventListeners();
-    
+
     // Load initial dashboard
     console.log('✅ Loading initial dashboard...');
     loadDashboard();
-    
+
     // Hash routing
     window.addEventListener('hashchange', handleHashChange);
     console.log('✅ Hash change listener attached');
-    
+
     // Refresh data every 5 minutes
     setInterval(loadDashboard, 300000);
 }
 
 function setupEventListeners() {
     console.log('✅ Setting up event listeners...');
-    
+
     // Menu Navigation - Click event using addEventListener
     const navItems = document.querySelectorAll('.nav-item');
     console.log('📊 Total nav items found:', navItems.length);
-    
+
     navItems.forEach((item, index) => {
         console.log(`✅ Attaching listener to nav item ${index}:`, item.dataset.menu);
-        
+
         // Remove any existing onclick handlers first
         item.onclick = null;
-        
+
         // Add listener using addEventListener for more reliable binding
-        item.addEventListener('click', function(e) {
+        item.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const menuType = this.dataset.menu;
             console.log('🔴 CLICKED NAV ITEM:', menuType);
-            
+
             // Hide all menus
             const allMenus = document.querySelectorAll('.menu-content');
             console.log('🔴 Found menus to hide:', allMenus.length);
@@ -80,24 +80,24 @@ function setupEventListeners() {
                 el.classList.remove('active');
                 console.log('  ✅ Removed active from:', el.id);
             });
-            
+
             // Remove active from all nav items
             const allNavItems = document.querySelectorAll('.nav-item');
             allNavItems.forEach(el => {
                 el.classList.remove('active');
             });
-            
+
             // Add active to current item
             this.classList.add('active');
             console.log('🔴 Added active to nav item:', menuType);
-            
+
             // Show target menu
             const targetMenuId = menuType + 'Menu';
             const targetMenu = document.getElementById(targetMenuId);
-            
+
             console.log('🔴 Looking for menu ID:', targetMenuId);
             console.log('🔴 Menu element found:', targetMenu !== null);
-            
+
             if (targetMenu) {
                 targetMenu.classList.add('active');
                 console.log('✅ Menu activated:', targetMenuId);
@@ -110,7 +110,7 @@ function setupEventListeners() {
                 console.error('❌ Menu NOT found:', targetMenuId);
                 console.error('   Available IDs:', Array.from(document.querySelectorAll('[id*="Menu"]')).map(e => e.id));
             }
-            
+
             // Update title
             const spanEl = this.querySelector('span');
             const titleText = spanEl ? spanEl.textContent : menuType;
@@ -119,7 +119,7 @@ function setupEventListeners() {
                 titleEl.textContent = titleText;
                 console.log('🔴 Updated title to:', titleText);
             }
-            
+
             // Load data
             console.log('🔴 Loading data for:', menuType);
             if (menuType === 'dashboard') {
@@ -131,7 +131,7 @@ function setupEventListeners() {
             } else if (menuType === 'laporan') {
                 loadLaporanData();
             }
-            
+
             return false;
         }, false); // Use non-capturing phase
     });
@@ -211,7 +211,7 @@ function setupEventListeners() {
 function handleHashChange() {
     const hash = window.location.hash.slice(1) || 'dashboard';
     console.log('✅ Hash changed to:', hash);
-    
+
     // Find and click the nav item
     const navItem = document.querySelector(`[data-menu="${hash}"]`);
     if (navItem) {
@@ -221,7 +221,7 @@ function handleHashChange() {
 
 function loadDashboard() {
     console.log('✅ Loading Dashboard...');
-    
+
     // Load Stats
     fetch(`${API_BASE}data.php?action=get_stats`)
         .then(response => {
@@ -282,12 +282,12 @@ function updateDataTerbaru(data) {
 
     data.forEach(item => {
         const statusClass = item.status_verifikasi === 'terverifikasi' ? 'badge-success' :
-                          item.status_verifikasi === 'ditolak' ? 'badge-danger' :
-                          'badge-warning';
-        
+            item.status_verifikasi === 'ditolak' ? 'badge-danger' :
+                'badge-warning';
+
         const statusText = item.status_verifikasi === 'terverifikasi' ? 'Terverifikasi' :
-                         item.status_verifikasi === 'ditolak' ? 'Ditolak' :
-                         'Pending';
+            item.status_verifikasi === 'ditolak' ? 'Ditolak' :
+                'Pending';
 
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -313,7 +313,7 @@ function loadChartsData() {
         console.warn('⚠️  Chart.js not available yet, skipping dashboard charts');
         return;
     }
-    
+
     // Load Kecamatan Chart
     fetch(`${API_BASE}data.php?action=get_data_by_kecamatan`)
         .then(response => response.json())
@@ -509,7 +509,7 @@ function loadLaporanData() {
     // Set today's date for laporan
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('laporanTanggalAkhir').value = today;
-    
+
     // Set first day of month for start date
     const firstDay = new Date();
     firstDay.setDate(1);
@@ -539,7 +539,18 @@ function handleLaporanSubmit(e) {
         return;
     }
 
-    alert('Laporan sedang dipersiapkan. Fitur ini akan dikembangkan lebih lanjut.');
+    // Construct URL with query parameters
+    const params = new URLSearchParams({
+        tipe: tipe,
+        kecamatan: kecamatan,
+        tanggal_awal: tanggalAwal,
+        tanggal_akhir: tanggalAkhir,
+        format: 'html' // Default to HTML/Print View
+    });
+
+    // Open report in new tab
+    const url = `${API_BASE}laporan.php?${params.toString()}`;
+    window.open(url, '_blank');
 }
 
 // Chart Creation Functions
@@ -666,7 +677,7 @@ function createChartAgamaFull(labels, data) {
                     titleFont: { size: 11 },
                     bodyFont: { size: 10 },
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             const label = context.label || '';
                             const value = context.parsed;
                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -719,7 +730,7 @@ function createChartPekerjaan(labels, data) {
                     titleFont: { size: 11, weight: 'bold' },
                     bodyFont: { size: 10 },
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             return 'Jumlah: ' + context.parsed.x.toLocaleString('id-ID');
                         }
                     }
@@ -734,7 +745,7 @@ function createChartPekerjaan(labels, data) {
                     },
                     ticks: {
                         font: { size: 9 },
-                        callback: function(value) {
+                        callback: function (value) {
                             return value.toLocaleString('id-ID');
                         }
                     }
@@ -832,7 +843,7 @@ function createChartKecamatanDetail(data) {
                     bodyFont: { size: 10 },
                     displayColors: true,
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
                             label += context.parsed.y.toLocaleString('id-ID');
@@ -850,7 +861,7 @@ function createChartKecamatanDetail(data) {
                     },
                     ticks: {
                         font: { size: 9 },
-                        callback: function(value) {
+                        callback: function (value) {
                             return value.toLocaleString('id-ID');
                         }
                     }
@@ -897,7 +908,7 @@ function createChartTrendInput(labels, datasets) {
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
                     segment: {
-                        borderDash: ctx => ctx.p1DataIndex === undefined ? [5,5] : undefined
+                        borderDash: ctx => ctx.p1DataIndex === undefined ? [5, 5] : undefined
                     }
                 },
                 {
@@ -947,7 +958,7 @@ function createChartTrendInput(labels, datasets) {
                     bodyFont: { size: 10 },
                     displayColors: true,
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
                             label += context.parsed.y.toLocaleString('id-ID');
@@ -965,7 +976,7 @@ function createChartTrendInput(labels, datasets) {
                     },
                     ticks: {
                         font: { size: 9 },
-                        callback: function(value) {
+                        callback: function (value) {
                             return value.toLocaleString('id-ID');
                         }
                     }
@@ -1059,7 +1070,7 @@ function createChartUmurGender(labels, datasets) {
                     bodyFont: { size: 10 },
                     displayColors: true,
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
                             label += context.parsed.y.toLocaleString('id-ID');
@@ -1077,7 +1088,7 @@ function createChartUmurGender(labels, datasets) {
                     },
                     ticks: {
                         font: { size: 9 },
-                        callback: function(value) {
+                        callback: function (value) {
                             return value.toLocaleString('id-ID');
                         }
                     }
@@ -1135,7 +1146,7 @@ function createChartVerifikasi(labels, data) {
                     titleFont: { size: 11, weight: 'bold' },
                     bodyFont: { size: 10 },
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             return 'Jumlah: ' + context.parsed.y.toLocaleString('id-ID');
                         }
                     }
@@ -1150,7 +1161,7 @@ function createChartVerifikasi(labels, data) {
                     },
                     ticks: {
                         font: { size: 9 },
-                        callback: function(value) {
+                        callback: function (value) {
                             return value.toLocaleString('id-ID');
                         }
                     }
@@ -1208,7 +1219,7 @@ function createChartPendidikan(labels, data) {
                     titleFont: { size: 11, weight: 'bold' },
                     bodyFont: { size: 10 },
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             return 'Jumlah: ' + context.parsed.x.toLocaleString('id-ID');
                         }
                     }
@@ -1223,7 +1234,7 @@ function createChartPendidikan(labels, data) {
                     },
                     ticks: {
                         font: { size: 9 },
-                        callback: function(value) {
+                        callback: function (value) {
                             return value.toLocaleString('id-ID');
                         }
                     }
@@ -1248,11 +1259,11 @@ function formatNumber(num) {
 
 function generateColors(count) {
     const colors = [
-        '#667eea', '#764ba2', '#f093fb', '#f5576c', 
+        '#667eea', '#764ba2', '#f093fb', '#f5576c',
         '#fa709a', '#fee140', '#30b0fe', '#4facfe',
         '#00f2fe', '#43e97b', '#38f9d7', '#ff6b6b'
     ];
-    
+
     const result = [];
     for (let i = 0; i < count; i++) {
         result.push(colors[i % colors.length]);
@@ -1289,8 +1300,8 @@ function makeAreaGradient(canvasEl, hexColor) {
 }
 
 function hexToRgba(hex, alpha) {
-    const h = hex.replace('#','');
-    const bigint = parseInt(h.length === 3 ? h.split('').map(c=>c+c).join('') : h, 16);
+    const h = hex.replace('#', '');
+    const bigint = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
     const r = (bigint >> 16) & 255;
     const g = (bigint >> 8) & 255;
     const b = bigint & 255;

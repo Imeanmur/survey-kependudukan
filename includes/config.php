@@ -16,14 +16,13 @@ if ($conn->connect_error) {
 // Set charset to utf8
 $conn->set_charset("utf8");
 
-// Header untuk CORS dan JSON
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+// Header untuk CORS dan JSON - REMOVED to allow HTML inclusion
+// header('Content-Type: application/json'); // Breaks HTML pages if included
+// header('Access-Control-Allow-Origin: *'); 
+// header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+// header('Access-Control-Allow-Headers: Content-Type');
 
 // Handle preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
-?>

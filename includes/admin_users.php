@@ -13,4 +13,9 @@ return [
         'role' => 'Diskominfo',
         'password_hash' => password_hash('anang2018', PASSWORD_DEFAULT),
     ],
+    'muridholmeswatson@gmail.com' => [
+        'name' => 'Murid Holmes',
+        'role' => 'User',
+        'password_hash' => password_hash('zai123', PASSWORD_DEFAULT),
+    ],
 ];
