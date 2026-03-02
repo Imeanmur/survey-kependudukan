@@ -14,7 +14,7 @@ $admin = $_SESSION['admin'];
     <title>Dashboard Survey Kependudukan - Diskominfo Pemkot Medan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=3">
 </head>
 
 <body>
@@ -544,6 +544,71 @@ $admin = $_SESSION['admin'];
         </main>
     </div>
 
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Data Penduduk</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <form id="editForm">
+                <div class="modal-body">
+                    <input type="hidden" id="editId" name="id_penduduk">
+
+                    <div class="form-group">
+                        <label>NIK</label>
+                        <input type="number" id="editNik" name="nik" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nama Lengkap</label>
+                        <input type="text" id="editNama" name="nama_lengkap" class="form-control" required>
+                    </div>
+
+                    <div class="grid-2" style="gap: 15px;">
+                        <div class="form-group">
+                            <label>Jenis Kelamin</label>
+                            <select id="editJk" name="jenis_kelamin" class="form-control">
+                                <option value="Laki-laki">Laki-laki</option>
+                                <option value="Perempuan">Perempuan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Agama</label>
+                            <select id="editAgama" name="agama" class="form-control">
+                                <option value="Islam">Islam</option>
+                                <option value="Kristen">Kristen</option>
+                                <option value="Katolik">Katolik</option>
+                                <option value="Hindu">Hindu</option>
+                                <option value="Buddha">Buddha</option>
+                                <option value="Konghucu">Konghucu</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pekerjaan</label>
+                        <input type="text" id="editPekerjaan" name="pekerjaan" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Status Perkawinan</label>
+                        <select id="editStatus" name="status_perkawinan" class="form-control">
+                            <option value="Belum Kawin">Belum Kawin</option>
+                            <option value="Kawin">Kawin</option>
+                            <option value="Cerai Hidup">Cerai Hidup</option>
+                            <option value="Cerai Mati">Cerai Mati</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" style="background: #e9ecef;" id="cancelEdit">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script>
         window.chartLoadedFromCDN = false;
@@ -560,7 +625,8 @@ $admin = $_SESSION['admin'];
             document.body.appendChild(fallbackScript);
         }
     </script>
-    <script src="assets/js/script.js"></script>
+    <script src="assets/js/script.js?v=2"></script>
+    <script src="assets/js/session-manager.js?v=2"></script>
 </body>
 
 </html>

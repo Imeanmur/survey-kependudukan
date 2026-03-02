@@ -116,7 +116,7 @@ body {
     right: 20px;
     bottom: 0;
     height: 1px;
-    background: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.35), rgba(0,0,0,0));
+    background: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0));
     opacity: 0.5;
     pointer-events: none;
 }
@@ -124,6 +124,7 @@ body {
 .nav-item:last-child::after {
     display: none;
 }
+
 .nav-item i {
     width: 20px;
     text-align: center;
@@ -177,9 +178,8 @@ body {
 
 /* Top Header */
 .top-header {
-    background: linear-gradient(180deg, #ffffff 0%, #ffffff 70%, #fbfbff 100%);
+    background: #ffffff;
     padding: 20px 30px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -194,9 +194,10 @@ body {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: -1px;
-    height: 22px;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0));
+    bottom: -35px;
+    height: 35px;
+    /* Blend seamlessly from white to the background gray */
+    background: linear-gradient(to bottom, #ffffff 0%, rgba(240, 242, 245, 0) 100%);
     pointer-events: none;
 }
 
@@ -306,6 +307,7 @@ body {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -375,12 +377,29 @@ body {
     opacity: 0.1;
 }
 
-.gradient-blue::before { background: linear-gradient(135deg, #667eea, #764ba2) !important; }
-.gradient-green::before { background: linear-gradient(135deg, #f093fb, #f5576c) !important; }
-.gradient-orange::before { background: linear-gradient(135deg, #fa709a, #fee140) !important; }
-.gradient-red::before { background: linear-gradient(135deg, #ff6b6b, #ee5a6f) !important; }
-.gradient-purple::before { background: linear-gradient(135deg, #667eea, #764ba2) !important; }
-.gradient-cyan::before { background: linear-gradient(135deg, #00d4ff, #0099ff) !important; }
+.gradient-blue::before {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+}
+
+.gradient-green::before {
+    background: linear-gradient(135deg, #f093fb, #f5576c) !important;
+}
+
+.gradient-orange::before {
+    background: linear-gradient(135deg, #fa709a, #fee140) !important;
+}
+
+.gradient-red::before {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a6f) !important;
+}
+
+.gradient-purple::before {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+}
+
+.gradient-cyan::before {
+    background: linear-gradient(135deg, #00d4ff, #0099ff) !important;
+}
 
 .stat-footer {
     padding-top: 15px;
@@ -505,9 +524,10 @@ body {
     right: 0;
     bottom: -1px;
     height: 10px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.12), rgba(0,0,0,0.06), rgba(0,0,0,0));
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0));
     pointer-events: none;
 }
+
 .card-header h3 {
     font-size: 18px;
     margin: 0;
@@ -766,8 +786,13 @@ body {
 
 /* Loading Animation */
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .fa-spin {
@@ -780,6 +805,7 @@ body {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -790,15 +816,19 @@ body {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.7;
     }
@@ -808,6 +838,7 @@ body {
     0% {
         background-position: -1000px 0;
     }
+
     100% {
         background-position: 1000px 0;
     }
@@ -869,6 +900,7 @@ body {
     .main-content {
         margin-left: 220px;
     }
+
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -881,6 +913,7 @@ body {
     .menu-content.active {
         position: relative;
     }
+
     .menu-content.active::before {
         content: '';
         position: absolute;
@@ -888,7 +921,7 @@ body {
         left: 0;
         right: 0;
         height: 10px;
-        background: linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0.03), rgba(0,0,0,0));
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0));
         pointer-events: none;
     }
 
@@ -1023,4 +1056,111 @@ body {
     .stat-value {
         font-size: 24px;
     }
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    width: 500px;
+    max-width: 90%;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0);
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--dark);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--gray);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.modal-close:hover {
+    color: var(--danger);
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background-color: #f8f9fa;
+}
+
+/* Action Buttons */
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.btn-edit {
+    background-color: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+}
+
+.btn-edit:hover {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-delete {
+    background-color: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+
+.btn-delete:hover {
+    background-color: var(--danger);
+    color: white;
 }

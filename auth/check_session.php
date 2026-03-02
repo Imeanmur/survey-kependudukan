@@ -1,5 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params(0);
     session_start();
 }
 
@@ -38,6 +39,33 @@ $_SESSION['last_activity'] = time();
 if (isset($_SESSION['admin']['email'])) {
     require_once __DIR__ . '/../includes/config.php';
     $updateEmail = $_SESSION['admin']['email'];
+    $currentSessionId = session_id();
+
+    // Check if session ID matches
+    $stmtCheck = $conn->prepare("SELECT session_id FROM active_sessions WHERE user_email = ?");
+    if ($stmtCheck) {
+        $stmtCheck->bind_param("s", $updateEmail);
+        $stmtCheck->execute();
+        $resCheck = $stmtCheck->get_result();
+        if ($resCheck->num_rows > 0) {
+            $rowCheck = $resCheck->fetch_assoc();
+            if ($rowCheck['session_id'] !== $currentSessionId) {
+                // Session overridden
+                session_unset();
+                session_destroy();
+                header('Location: /survey-kependudukan/login.html?error=Sesi ini telah digantikan oleh login dari perangkat lain.');
+                exit;
+            }
+        } else {
+            // Session was completely removed from DB (e.g. by tab close beacon)
+            session_unset();
+            session_destroy();
+            header('Location: /survey-kependudukan/login.html?error=Sesi telah berakhir.');
+            exit;
+        }
+        $stmtCheck->close();
+    }
+
     $stmtUpd = $conn->prepare("UPDATE active_sessions SET last_activity = NOW() WHERE user_email = ?");
     if ($stmtUpd) {
         $stmtUpd->bind_param("s", $updateEmail);

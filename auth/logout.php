@@ -15,5 +15,14 @@ if (isset($_SESSION['admin']['email'])) {
 
 session_unset();
 session_destroy();
-header('Location: /survey-kependudukan/login.html');
+$reason = isset($_GET['reason']) ? $_GET['reason'] : '';
+$redirectParams = '';
+
+if ($reason === 'timeout') {
+    $redirectParams = '?error=Sesi berakhir karena tidak ada aktifitas.';
+} elseif ($reason === 'timechange') {
+    $redirectParams = '?error=Waktu berganti, silakan login kembali untuk memperbarui tema.';
+}
+
+header('Location: /survey-kependudukan/login.html' . $redirectParams);
 exit;

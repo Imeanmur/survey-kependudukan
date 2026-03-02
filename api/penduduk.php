@@ -14,6 +14,12 @@ switch ($action) {
     case 'search_penduduk':
         searchPenduduk();
         break;
+    case 'update_penduduk':
+        updatePenduduk();
+        break;
+    case 'delete_penduduk':
+        deletePenduduk();
+        break;
     default:
         echo json_encode(['success' => false, 'message' => 'Invalid action']);
 }
@@ -107,5 +113,66 @@ function searchPenduduk()
     $stmt->close();
 
     echo json_encode(['success' => true, 'data' => $data]);
+}
+
+function updatePenduduk()
+{
+    global $conn;
+
+    $id_penduduk = isset($_POST['id_penduduk']) ? (int) $_POST['id_penduduk'] : 0;
+    $nik = isset($_POST['nik']) ? trim($_POST['nik']) : '';
+    $nama = isset($_POST['nama_lengkap']) ? trim($_POST['nama_lengkap']) : '';
+    $jk = isset($_POST['jenis_kelamin']) ? $_POST['jenis_kelamin'] : '';
+    $agama = isset($_POST['agama']) ? $_POST['agama'] : '';
+    $pekerjaan = isset($_POST['pekerjaan']) ? trim($_POST['pekerjaan']) : '';
+    $status = isset($_POST['status_perkawinan']) ? $_POST['status_perkawinan'] : '';
+
+    if ($id_penduduk == 0 || empty($nik) || empty($nama)) {
+        echo json_encode(['success' => false, 'message' => 'Data tidak lengkap']);
+        return;
+    }
+
+    $stmt = $conn->prepare("UPDATE penduduk SET nik=?, nama_lengkap=?, jenis_kelamin=?, agama=?, pekerjaan=?, status_perkawinan=? WHERE id_penduduk=?");
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'message' => 'Prepare failed']);
+        return;
+    }
+
+    $stmt->bind_param("ssssssi", $nik, $nama, $jk, $agama, $pekerjaan, $status, $id_penduduk);
+
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Update gagal: ' . $stmt->error]);
+    }
+    $stmt->close();
+}
+
+function deletePenduduk()
+{
+    global $conn;
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    $id = isset($input['id_penduduk']) ? (int) $input['id_penduduk'] : 0;
+
+    if ($id == 0) {
+        // Try GET if JSON body is empty
+        $id = isset($_GET['id_penduduk']) ? (int) $_GET['id_penduduk'] : 0;
+    }
+
+    if ($id == 0) {
+        echo json_encode(['success' => false, 'message' => 'ID tidak valid']);
+        return;
+    }
+
+    $stmt = $conn->prepare("DELETE FROM penduduk WHERE id_penduduk = ?");
+    $stmt->bind_param("i", $id);
+
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Hapus gagal: ' . $stmt->error]);
+    }
+    $stmt->close();
 }
 ?>

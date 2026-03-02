@@ -1,4 +1,5 @@
 <?php
+session_set_cookie_params(0);
 session_start();
 
 // Only accept POST
@@ -45,26 +46,10 @@ if (!password_verify($password, $info['password_hash'])) {
 }
 
 
-// Check for active session in other devices
+// Check for active session in other devices (removed the block so new logins can override)
 require_once __DIR__ . '/../includes/config.php';
-$checkStmt = $conn->prepare("SELECT last_activity FROM active_sessions WHERE user_email = ?");
-$checkStmt->bind_param("s", $email);
-$checkStmt->execute();
-$checkResult = $checkStmt->get_result();
-
-if ($checkResult->num_rows > 0) {
-    $row = $checkResult->fetch_assoc();
-    $lastActivity = strtotime($row['last_activity']);
-    // If active within last 30 minutes, block
-    if (time() - $lastActivity < 300) {
-        header('Location: /survey-kependudukan/login.html?error=Akun sedang digunakan di perangkat lain');
-        exit;
-    } else {
-        // Old stale session, maybe clean it up or valid to override
-        // For now, let's allow it but we'll overwrite it in verify_otp
-    }
-}
-$checkStmt->close();
+// We don't block anymore. The new session will override the old one in verify_otp.php
+// which implements the "Terminate Other Sessions on Login" feature properly.
 
 // Success: set session
 // SUCCESS: Generate OTP and temporary session

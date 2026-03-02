@@ -469,6 +469,7 @@ function updatePendudukTable(data) {
         return;
     }
 
+
     data.forEach(item => {
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -480,13 +481,112 @@ function updatePendudukTable(data) {
             <td>${item.pekerjaan || '-'}</td>
             <td>${item.status_perkawinan}</td>
             <td>
-                <button class="btn btn-sm" onclick="viewPendudukDetail(${item.id_penduduk})">
-                    <i class="fas fa-eye"></i>
-                </button>
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn btn-sm btn-edit" onclick="editPenduduk(this)" 
+                        data-id="${item.id_penduduk}"
+                        data-nik="${item.nik}"
+                        data-nama="${item.nama_lengkap}"
+                        data-jk="${item.jenis_kelamin}"
+                        data-agama="${item.agama}"
+                        data-pekerjaan="${item.pekerjaan || ''}"
+                        data-status="${item.status_perkawinan}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-delete" onclick="deletePenduduk(${item.id_penduduk})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </td>
         `;
         tbody.appendChild(row);
     });
+}
+
+// Global modal elements
+let editModal, closeModalBtn, cancelEditBtn, editForm;
+
+document.addEventListener('DOMContentLoaded', function () {
+    editModal = document.getElementById('editModal');
+    closeModalBtn = document.getElementById('closeModal');
+    cancelEditBtn = document.getElementById('cancelEdit');
+    editForm = document.getElementById('editForm');
+
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeEditModal);
+    if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeEditModal);
+    if (editForm) editForm.addEventListener('submit', handleEditSubmit);
+});
+
+function openEditModal() {
+    if (editModal) editModal.classList.add('active');
+}
+
+function closeEditModal() {
+    if (editModal) editModal.classList.remove('active');
+}
+
+function editPenduduk(btn) {
+    const id = btn.getAttribute('data-id');
+    const nik = btn.getAttribute('data-nik');
+    const nama = btn.getAttribute('data-nama');
+    const jk = btn.getAttribute('data-jk');
+    const agama = btn.getAttribute('data-agama');
+    const pekerjaan = btn.getAttribute('data-pekerjaan');
+    const status = btn.getAttribute('data-status');
+
+    document.getElementById('editId').value = id;
+    document.getElementById('editNik').value = nik;
+    document.getElementById('editNama').value = nama;
+    document.getElementById('editJk').value = jk;
+    document.getElementById('editAgama').value = agama;
+    document.getElementById('editPekerjaan').value = pekerjaan;
+    document.getElementById('editStatus').value = status;
+
+    openEditModal();
+}
+
+function deletePenduduk(id) {
+    if (confirm('Apakah Anda yakin ingin menghapus data penduduk ini?')) {
+        fetch(`${API_BASE}penduduk.php?action=delete_penduduk`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id_penduduk: id })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Data berhasil dihapus');
+                    loadPenduduk();
+                    loadDashboard(); // Refresh stats
+                } else {
+                    alert('Gagal menghapus data: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+}
+
+function handleEditSubmit(e) {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+
+    fetch(`${API_BASE}penduduk.php?action=update_penduduk`, {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Data berhasil diperbarui');
+                closeEditModal();
+                loadPenduduk();
+            } else {
+                alert('Gagal memperbarui data: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => console.error('Error:', error));
 }
 
 function loadLaporanData() {
